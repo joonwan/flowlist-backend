@@ -34,3 +34,17 @@ def get_task(task_id: int):
             return task
     
     raise HTTPException(status_code=404, detail="Task not found")
+
+# task 수정
+@app.put("/tasks/{task_id}")
+def update_task(task_id: int, task_data: TaskCreate):
+    for index, task in enumerate(tasks):
+        if task.id == task_id:
+            updated_task = Task(
+                id = task.id,
+                title=task_data.title,
+                is_done=task.is_done
+            )
+            tasks[index] = updated_task
+            return tasks[index]
+    raise HTTPException(status_code=404, detail="Task not found")
