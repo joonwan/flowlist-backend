@@ -6,13 +6,13 @@ router = APIRouter(prefix="/tasks")
 tasks: list[Task] = []
 
 # task 전체 조회
-@router.get("")
+@router.get("", response_model=list[Task])
 def get_tasks():
     return tasks
 
 
 # new task 등록
-@router.post("")
+@router.post("", response_model=list[Task])
 def create_task(task_data: TaskCreate):
     new_task = Task(id=len(tasks) + 1, title=task_data.title, is_done=False)
 
@@ -21,7 +21,7 @@ def create_task(task_data: TaskCreate):
 
 
 # task 단건 조회
-@router.get("/{task_id}")
+@router.get("/{task_id}", response_model=Task)
 def get_task(task_id: int):
     for task in tasks:
         if task.id == task_id:
@@ -31,7 +31,7 @@ def get_task(task_id: int):
 
 
 # task 수정
-@router.put("/{task_id}")
+@router.put("/{task_id}", response_model=Task)
 def update_task(task_id: int, task_data: TaskUpdate):
     for index, task in enumerate(tasks):
         if task.id == task_id:
@@ -44,7 +44,7 @@ def update_task(task_id: int, task_data: TaskUpdate):
 
 
 # task 삭제
-@router.delete("/{task_id}")
+@router.delete("/{task_id}", response_model=Task)
 def delete_task(task_id: int):
     for index, task in enumerate(tasks):
         if task.id == task_id:
