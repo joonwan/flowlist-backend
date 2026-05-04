@@ -12,3 +12,14 @@ def read_root():
 @app.get("/tasks")
 def get_tasks():
     return tasks
+
+@app.post("/tasks")
+def create_task(task_data: TaskCreate):
+    new_task = Task(
+        id = len(tasks) + 1,
+        title = task_data.title,
+        is_done = False
+    )
+
+    tasks.append(new_task)
+    return new_task

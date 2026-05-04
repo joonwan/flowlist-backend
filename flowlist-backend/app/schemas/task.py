@@ -6,5 +6,5 @@ class TaskCreate(BaseModel):
 class Task(BaseModel):
     id: int
     title: str
-    is_doen: bool
+    is_done: bool
 
