@@ -5,7 +5,7 @@ class TaskCreate(BaseModel):
     title: str
 
 
-class Task(BaseModel):
+class TaskResponse(BaseModel):
     id: int
     title: str
     is_done: bool
