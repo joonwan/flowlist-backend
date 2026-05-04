@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response, status
 from app.schemas.task import Task, TaskCreate, TaskUpdate
 
 router = APIRouter(prefix="/tasks")
 
 tasks: list[Task] = []
+
 
 # task 전체 조회
 @router.get("", response_model=list[Task])
@@ -12,7 +13,7 @@ def get_tasks():
 
 
 # new task 등록
-@router.post("", response_model=list[Task])
+@router.post("", response_model=list[Task], status_code=status.HTTP_201_CREATED)
 def create_task(task_data: TaskCreate):
     new_task = Task(id=len(tasks) + 1, title=task_data.title, is_done=False)
 
@@ -44,9 +45,10 @@ def update_task(task_id: int, task_data: TaskUpdate):
 
 
 # task 삭제
-@router.delete("/{task_id}", response_model=Task)
+@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_task(task_id: int):
     for index, task in enumerate(tasks):
         if task.id == task_id:
-            return tasks.pop(index)
+            tasks.pop(index)
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
     raise HTTPException(status_code=404, detail="Task not found")
