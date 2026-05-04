@@ -3,6 +3,7 @@ from app.schemas.task import Task, TaskCreate
 
 app = FastAPI()
 
+tasks: list[Task] = []
 
 @app.get("/")
 def read_root():
