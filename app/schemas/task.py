@@ -1,18 +1,20 @@
-from pydantic import BaseModel
 from datetime import date
+from typing import Annotated
+
+from pydantic import BaseModel, Field
 
 
 class TaskCreate(BaseModel):
-    title: str
+    title: Annotated[str, Field(min_length=1, max_length=255)]
     description: str | None = None
-    priority: int = 1
+    priority: Annotated[int, Field(ge=1, le=3)] = 1
     due_date: date | None = None
 
 
 class TaskUpdate(BaseModel):
-    title: str
+    title: Annotated[str, Field(min_length=1, max_length=255)]
     description: str | None = None
-    priority: int = 1
+    priority: Annotated[int, Field(ge=1, le=3)] = 1
     due_date: date | None = None
     is_done: bool
 
