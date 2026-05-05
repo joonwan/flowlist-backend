@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-
-from app.services import task_service, task_ai_service
-
 from app.schemas.task import TaskResponse, TaskCreate, TaskUpdate
 from app.schemas.task_ai import TaskBreakdownResponse
+from app.infrastructure.database import get_db
+from app.services import task_service, task_ai_service
 
 router = APIRouter(prefix="/tasks")
 
@@ -44,6 +42,7 @@ def update_task(
 def delete_task(task_id: int, db: Session = Depends(get_db)):
     task_service.delete_task(db, task_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
 
 # ai 기반 task 쪼개는 endpoint
 @router.post("/{task_id}/breakdown", response_model=TaskBreakdownResponse)

@@ -1,7 +1,8 @@
-from fastapi import FastAPI, HTTPException
-from app.routers.tasks import router as tasks_router
+from fastapi import FastAPI
+
+from app.infrastructure.database import Base, engine
 from app.models.task import Task
-from app.database import Base, engine
+from app.routers.tasks import router as tasks_router
 
 app = FastAPI()
 

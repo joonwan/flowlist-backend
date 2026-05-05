@@ -1,19 +1,12 @@
 import json
-import os
 
-from dotenv import load_dotenv
-from openai import OpenAI
 from fastapi import HTTPException
+from openai import OpenAI
 from sqlalchemy.orm import Session
 
+from app.core.config import LLM_API_KEY, LLM_BASE_URL, LLM_MODEL
 from app.repositories.task_repository import get_task_record_by_id
 from app.schemas.task_ai import TaskBreakdownResponse
-
-load_dotenv()
-
-LLM_BASE_URL = os.getenv("LLM_BASE_URL")
-LLM_MODEL = os.getenv("LLM_MODEL")
-LLM_API_KEY = os.getenv("LLM_API_KEY")
 
 client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
 
