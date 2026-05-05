@@ -1,14 +1,21 @@
 import json
+import os
 
-import httpx
+from dotenv import load_dotenv
+from openai import OpenAI
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.repositories.task_repository import get_task_record_by_id
 from app.schemas.task_ai import TaskBreakdownResponse
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_MODEL = "qwen2.5:3b"
+load_dotenv()
+
+LLM_BASE_URL = os.getenv("LLM_BASE_URL")
+LLM_MODEL = os.getenv("LLM_MODEL")
+LLM_API_KEY = os.getenv("LLM_API_KEY")
+
+client = OpenAI(base_url=LLM_BASE_URL, api_key=LLM_API_KEY)
 
 
 def breakdown_task(db: Session, task_id: int) -> TaskBreakdownResponse:
@@ -17,37 +24,81 @@ def breakdown_task(db: Session, task_id: int) -> TaskBreakdownResponse:
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
 
-    prompt = f"""
-                You are a task planning assistant.
-
-                Break the following task into short, actionable subtasks.
-                Return only valid JSON in this format:
-                {{"subtasks": ["step 1", "step 2", "step 3"]}}
-
-                Task title: {task.title}
-                Task description: {task.description}
-                Priority: {task.priority}
-                Due date: {task.due_date}
-            """.strip()
-
-    response = httpx.post(
-        OLLAMA_URL,
-        json={
-            "model": OLLAMA_MODEL,
-            "prompt": prompt,
-            "stream": False,
+    messages = [
+        {
+            "role": "developer",
+            "content": (
+                "You are a task planning assistant. "
+                "Break the given task into 3 to 5 short actionable subtasks. "
+                "Each subtask must be a short sentence. "
+                'Respond with only one JSON object in this exact format: {"subtasks": ["subtask 1", "subtask 2"]}.'
+            ),
         },
-        timeout=60.0,
-    )
+        {
+            "role": "user",
+            "content": (
+                "title: Learn SQLAlchemy basics\n"
+                "description: Understand models, sessions, and CRUD operations\n"
+                "priority: 2\n"
+                "due_date: 2026-05-10"
+            ),
+        },
+        {
+            "role": "assistant",
+            "content": (
+                '{"subtasks": ['
+                '"Read how SQLAlchemy models are defined", '
+                '"Create a simple model with mapped columns", '
+                '"Practice creating and querying records", '
+                '"Update and delete records with a session"'
+                "]}"
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                "title: Add Redis cache to FastAPI\n"
+                "description: Cache task list responses and invalidate cache after updates\n"
+                "priority: 2\n"
+                "due_date: 2026-05-11"
+            ),
+        },
+        {
+            "role": "assistant",
+            "content": (
+                '{"subtasks": ['
+                '"Install and connect a Redis client", '
+                '"Cache the task list response", '
+                '"Set a TTL for cached data", '
+                '"Delete cache after create update and delete"'
+                "]}"
+            ),
+        },
+        {
+            "role": "user",
+            "content": (
+                f"title: {task.title}\n"
+                f"description: {task.description}\n"
+                f"priority: {task.priority}\n"
+                f"due_date: {task.due_date}"
+            ),
+        },
+    ]
 
-    if response.status_code != 200:
-        raise HTTPException(status_code=500, detail="Failed to call Ollama")
+    try:
+        response = client.chat.completions.create(
+            model=LLM_MODEL, messages=messages, temperature=0.3
+        )
+    except Exception:
+        raise HTTPException(status_code=500, detail="Failed to call llm")
 
-    result = response.json()
-    content = result.get("response", "").strip()
+    content = response.choices[0].message.content
+    print(content)
+    if not content:
+        raise HTTPException(status_code=500, detail="llm returned empty response")
 
     try:
         parsed = json.loads(content)
         return TaskBreakdownResponse(**parsed)
     except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Ollama returned invalid JSON")
+        raise HTTPException(status_code=500, detail="llm returned invalid json")
