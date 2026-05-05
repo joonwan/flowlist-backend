@@ -91,7 +91,7 @@ def breakdown_task(db: Session, task_id: int) -> TaskBreakdownResponse:
         raise HTTPException(status_code=500, detail="llm returned empty response")
 
     try:
-        parsed = json.loads(content)
+        parsed = json.loads(content) # json to dict
         return TaskBreakdownResponse(**parsed)
     except json.JSONDecodeError:
         raise HTTPException(status_code=500, detail="llm returned invalid json")
