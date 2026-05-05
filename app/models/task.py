@@ -1,8 +1,9 @@
+from datetime import date
+
 from sqlalchemy import Boolean, Integer, String, Date
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
-from datetime import date
 
 
 class Task(Base):
