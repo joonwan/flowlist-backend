@@ -11,7 +11,13 @@ def get_all_task_records(db: Session):
 
 # create Task
 def create_task_record(db: Session, task_data: TaskCreate):
-    new_task = Task(title=task_data.title, is_done=False)
+    new_task = Task(
+        title=task_data.title,
+        description=task_data.description,
+        priority=task_data.priority,
+        due_date=task_data.due_date,
+        is_done=False,
+    )
 
     db.add(new_task)
     db.commit()
@@ -27,6 +33,9 @@ def get_task_record_by_id(db: Session, task_id: int):
 # update Task
 def update_task_record(db: Session, task: Task, task_data: TaskUpdate):
     task.title = task_data.title
+    task.description = task_data.description
+    task.priority = task_data.priority
+    task.due_date = task_data.due_date
     task.is_done = task_data.is_done
 
     db.commit()
